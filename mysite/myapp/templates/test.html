@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="app">
+  <ol>
+    <li v-for="site in sites">
+      <span v-text="site.name"></span>
+    </li>
+  </ol>
+  <!-- <ol>
+    <li v-for="site in gridData">
+      <span v-text="site.phone"></span>
+    </li>
+  </ol> -->
+  <div>
+    <label>点击下载文件: </label>
+    <!-- <button onclick="window.location.href='{% url 'myapp:file_download' %}'">Download</button> -->
+    <button v-on:click="fileDownload">Download</button>
+  </div>
+  <div style="line-height:40px">
+    <label>点击上传文件:</label>
+    <input type="file" @change="selectFile">
+    <p><button v-on:click="fileUpload">Upload</button></p>
+  </div>
+  <div>
+    <table>
+      <thead>
+        <tr>
+          <th v-for="game in gameList">
+            <span v-text="game | capitalize"></span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="project in projects">
+          <td v-for="game in gameList">
+            <span v-text="project[game]"></span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    sites: [
+      { name: 'Runoob' },
+      { name: 'Google' },
+      { name: 'Taobao' }
+    ],
+    apiUrl: "{% url 'myapp:resource' %}",//'/myapp/resource',
+    gridData:[],
+    file: '',
+    gameList: ["projectName","projectInfo","createTime","creatorUin","projectId"],
+    projects: []
+  },
+  ready: function() {
+    this.getCustomers(),
+    this.getProjects()
+  },
+  methods: {
+    getCustomers: function() {
+      this.$http.get(this.apiUrl)
+        .then((response) => {
+          this.$set('gridData', JSON.parse(response.data))
+          console.log(response)
+        })
+        .catch(function(response) {
+          console.log(response)
+        })
+    },
+    getProjects: function() {
+      this.$http.get("{% url 'myapp:qcloudapi' %}")
+        .then((response) => {
+          this.$set('projects', JSON.parse(response.data))
+          // console.log(response.data)
+        })
+        .catch(function(response) {
+          console.log(response)
+        })
+    },
+    fileDownload (event) {
+      window.location.href = "{% url 'myapp:file_download' %}"
+    },
+    selectFile (event) {
+      this.file = event.target.files[0];
+      console.log(this.file);
+    },
+    fileUpload (event) {
+      var formData = new FormData()
+      formData.append('myfile', this.file)
+      // let formData = {'myfile': event.target.files[0]}
+      console.log(formData)
+      this.$http.post("{% url 'myapp:file_upload' %}", formData, {
+        headers: {
+        "Content-Type": "multipart/form-data"
+        }
+      }).then((response) => {
+          console.log(response)
+      })
+    }
+  }
+})
+</script>
+{% endblock %}

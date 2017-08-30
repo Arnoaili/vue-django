@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="app" >
+  <p>用户名：</p>
+  <input v-model="item.username">
+  <p>密码</p>
+  <input v-model="item.password">
+  <input type="checkbox" id="checkbox" v-model="checked">
+  <br>
+  <br>
+  <button @click="login">login</button>
+</div>
+
+<script>
+new Vue({
+  el: '#app',
+  data: {
+    apiUrl: "{% url 'myapp:login_api' %}", //'/myapp/login_api/',
+    item: {}
+  },
+  methods: {
+    login: function() {
+      var vm = this
+      vm.$http.post(vm.apiUrl, vm.item,{
+      headers: {
+          'Access-Control-Allow-Origin': true
+      }
+    })
+        .then((response) => {
+          // vm.$set('item', {})
+          console.log(response)
+          location.href = "{% url 'myapp:post' %}"//'/myapp/post/'
+          //////////////////////
+          // if (response.status==0)
+        })
+    }
+  }
+})
+</script>
+{% endblock %}
